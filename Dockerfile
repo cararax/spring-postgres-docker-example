@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM openjdk:11
+FROM openjdk:11 as base
 
 WORKDIR /app
 
@@ -11,4 +11,24 @@ RUN ./mvnw dependency:go-offline
 COPY src ./src
 
 CMD ["./mvnw", "spring-boot:run"]
+
+
+FROM base as test
+CMD ["./mvnw", "test"]
+
+
+FROM base as development
+CMD ["./mvnw", "spring-boot:run", "-Dspring-boot.run.profiles=mysql", "-Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000'"]
+
+
+FROM base as build
+RUN ./mvnw package
+
+
+FROM openjdk:11-jre-slim as production
+EXPOSE 8080
+
+COPY --from=build /app/target/springAppDemo-petclinic-*.jar /springAppDemo.jar
+
+CMD ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/springAppDemo.jar"]
 
