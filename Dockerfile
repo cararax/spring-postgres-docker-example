@@ -7,15 +7,12 @@ WORKDIR /app
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 RUN ./mvnw dependency:go-offline
-
 COPY src ./src
 
 CMD ["./mvnw", "spring-boot:run"]
 
-
 FROM base as test
-CMD ["./mvnw", "test"]
-
+RUN ["./mvnw", "test"]
 
 FROM base as development
 CMD ["./mvnw", "spring-boot:run", "-Dspring-boot.run.profiles=mysql", "-Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000'"]
