@@ -1,5 +1,14 @@
+# syntax=docker/dockerfile:1
+
 FROM openjdk:11
-VOLUME /tmp
-EXPOSE 8080
-ADD target/springAppDemo-0.0.1-SNAPSHOT.jar springAppDemo.jar
-ENTRYPOINT ["java","-jar","/springAppDemo.jar"]
+
+WORKDIR /app
+
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
+
+COPY src ./src
+
+CMD ["./mvnw", "spring-boot:run"]
+
